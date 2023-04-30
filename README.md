@@ -1,6 +1,6 @@
 # knn-algorithm
  
-An implementation of the K-Nearest Neighbor algorithm, using TypeScript.
+An implementation of the K-Nearest Neighbors algorithm, using TypeScript.
 
 ## Available Scripts
 
