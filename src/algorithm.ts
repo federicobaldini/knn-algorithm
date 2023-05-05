@@ -121,7 +121,7 @@ const splitDataset = (
  * The algorithm uses the "bucket" variable (data[3]) as the dependent variable that is analyzed.
  *
  * @param dataset The set of training data to be analyzed.
- * @param predictionPoint The point used to calculate the distance between each training data.
+ * @param predictionPoints The points used to calculate the distance between each training data.
  * @param k k-nearest neighbors.
  * @returns The predicted label for the test point.
  */
@@ -209,12 +209,18 @@ const knn = (
  */
 const analyzeDataset = (dataset: Dataset): void => {
   const testDatasetSize: number = 100;
-  const [testDataset, trainingDataset]: [Dataset, Dataset] = splitDataset(
-    minMax(dataset, 3),
-    testDatasetSize
-  );
+  const featuresList: Array<number> = [0, 1, 2];
+  const k: number = 10;
 
-  for (let k: number = 1; k < 20; k += 1) {
+  featuresList.forEach((feature: number) => {
+    const filteredDatasetByFeature: Dataset = dataset.map(
+      (data: Array<number>) => [data[feature], last(data) as number]
+    );
+    const [testDataset, trainingDataset]: [Dataset, Dataset] = splitDataset(
+      minMax(filteredDatasetByFeature, 1),
+      testDatasetSize
+    );
+
     /*
       - FILTER:
         Filters the test dataset by selecting only the test data points for which
@@ -237,8 +243,12 @@ const analyzeDataset = (dataset: Dataset): void => {
       .divide(testDatasetSize)
       .value();
 
-    console.log("k: ", k, " accuracy: " + Math.round(accuracy * 100) + "%");
-  }
+    console.log(
+      "feature: ",
+      feature,
+      " accuracy: " + Math.round(accuracy * 100) + "%"
+    );
+  });
 };
 
 export { analyzeDataset };
