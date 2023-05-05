@@ -2,18 +2,19 @@
   "name": "knn-algorithm",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "start": "tsc && node dist/main.js",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.194",
-    "typescript": "^5.0.2",
-    "vite": "^4.3.0"
+    "@types/shuffle-seed": "^1.1.0",
+    "typescript": "^5.0.2"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "@tensorflow/tfjs": "^4.4.0",
+    "lodash": "^4.17.21",
+    "shuffle-seed": "^1.1.6"
   }
 }
