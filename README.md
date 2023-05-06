@@ -1,6 +1,6 @@
-# knn-algorithm
+# ml-algorithms
  
-An implementation of the K-Nearest Neighbors algorithm using Node.js, TensorFlow.js and TypeScript .
+An implementation of various machine learning algorithms using Node.js, TensorFlow.js and TypeScript.
 
 ## Available Scripts
 
