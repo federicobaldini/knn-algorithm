@@ -1,6 +1,6 @@
 # knn-algorithm
  
-An implementation of the K-Nearest Neighbors algorithm, using TypeScript.
+An implementation of the K-Nearest Neighbors algorithm using Node.js, TensorFlow.js and TypeScript .
 
 ## Available Scripts
 
@@ -10,10 +10,10 @@ Install the dependencies:
 npm install
 ```
 
-then start the development server:
+then start the application:
 
 ```
-npm run dev
+npm run start
 ```
 
-Navigate to [localhost:5173](http://localhost:5173). You should see the app running. Edit a file in `src`, save it, and reload the page to see your changes.
+You should see the results of the data analysis inside the terminal.
