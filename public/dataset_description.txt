@@ -1,7 +1,0 @@
-These data are provided from a Plinko game.
-
-Given the array of values [416, 0.4, 16, 4]:
-- the first value indicates the "drop position x";
-- the second value indicates the "bounciness" of the dropped ball;
-- the third value indicates the "ball size";
-- the fourth value indicates the "bucket" where the ball ends its race.
