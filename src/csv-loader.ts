@@ -67,7 +67,7 @@ const loadCSV = (
   testLabels?: Dataset;
 } => {
   // Read the CSV file and store its contents as a string.
-  let stringDataset: string = fs.readFileSync(`./public/${filename}`, {
+  let stringDataset: string = fs.readFileSync(`./public/datasets/${filename}`, {
     encoding: "utf-8",
   });
 
