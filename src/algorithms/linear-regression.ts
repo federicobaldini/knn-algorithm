@@ -50,6 +50,25 @@ class LinearRegression {
       ) *
         2) /
       this.features.length;
+
+    // Calculate the slope of the Mean Squared Error (MSE) with respect to slope (m).
+    const mseSlopeByM: number =
+      (sum(
+        currentGuessesForMPG.map((guess: number, index: number): number => {
+          if (Number(this.features[index][0])) {
+            // Calculate the partial derivative of the error with respect to slope (m).
+            return (
+              -1 *
+              (this.features[index][0] as number) *
+              ((this.labels[index][0] as number) - guess)
+            );
+          }
+          // Return 0 for non-numeric values.
+          return 0;
+        })
+      ) *
+        2) /
+      this.features.length;
   }
 
   train(): void {
