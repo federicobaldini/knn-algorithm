@@ -1,12 +1,20 @@
-import { Tensor, Rank } from "@tensorflow/tfjs";
+import { sum } from "lodash";
 
+// Define the Options type for configuration.
 type Options = {
   learningRate: number;
   iterations: number;
 };
 
+// Define the Dataset type for input data.
 type Dataset = Array<Array<string | number>>;
 
+/**
+ * Represents a linear regression model.
+ *
+ * The model learns the relationship between independent variables (features)
+ * and dependent variables (labels) using gradient descent optimization.
+ */
 class LinearRegression {
   private features: Dataset;
   private labels: Dataset;
@@ -14,24 +22,40 @@ class LinearRegression {
   private m: number;
   private b: number;
 
+  /**
+   * Creates an instance of LinearRegression.
+   *
+   * @param features - The training data features.
+   * @param labels - The training data labels.
+   * @param options - The configuration options for the model.
+   */
   constructor(features: Dataset, labels: Dataset, options?: Options) {
     this.features = features;
     this.labels = labels;
+    // Set default options if not provided.
     this.options = Object.assign(
       { learningRate: 0.1, iterations: 1000 },
       options
     );
+    // Set initial slope (m) and y-intercept (b) values.
     this.m = 0;
     this.b = 0;
   }
 
+  /**
+   * Performs gradient descent optimization to update the model parameters.
+   */
   gradientDescent(): void {
     // TODO: generalize it
+
+    // Calculate the current guesses for the dependent variable.
     const currentGuessesForMPG = this.features.map(
       (row: Array<string | number>): number => {
         if (Number(row[0])) {
+          // Calculate the predicted value (guess) for a row.
           return this.m * (row[0] as number) + this.b;
         }
+        // Return 0 for non-numeric values.
         return 0;
       }
     );
@@ -71,8 +95,12 @@ class LinearRegression {
       this.features.length;
   }
 
+  /**
+   * Trains the linear regression model by performing gradient descent optimization.
+   */
   train(): void {
     for (let i = 0; i < this.options.iterations; i += 1) {
+      // Perform gradient descent for the specified number of iterations.
       this.gradientDescent();
     }
   }
