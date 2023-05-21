@@ -1,6 +1,7 @@
 import { tensor } from "@tensorflow/tfjs";
 import { knn } from "./algorithms/k-nearest-neighbors";
 import { loadCSV } from "./csv-loader";
+import { LinearRegression } from "./algorithms/linear-regression";
 
 type Dataset = Array<Array<string | number>>;
 
@@ -54,8 +55,8 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
   let {
     features, // input features for training data.
     labels, // output labels for training data.
-    testFeatures, // input features for test data.
-    testLabels, // output labels for test data.
+    // testFeatures, // input features for test data.
+    // testLabels, // output labels for test data.
   }: {
     features: Dataset;
     labels: Dataset;
@@ -67,6 +68,17 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
     shuffle: true,
     splitTest: 50,
   });
+
+  const linearRegression: LinearRegression = new LinearRegression(
+    features,
+    labels,
+    { learningRate: 0.0001, iterations: 100 }
+  );
+
+  linearRegression.train();
+
+  console.log("Updated M is:", linearRegression.getM());
+  console.log("Updated B is:", linearRegression.getB());
 };
 
 export { runKnnAnalysis, runLinearRegressionAnalysis };
