@@ -42,6 +42,14 @@ class LinearRegression {
     this.b = 0;
   }
 
+  getM(): number {
+    return this.m;
+  }
+
+  getB(): number {
+    return this.b;
+  }
+
   /**
    * Performs gradient descent optimization to update the model parameters.
    */
@@ -93,6 +101,10 @@ class LinearRegression {
       ) *
         2) /
       this.features.length;
+
+    // Update the slope (m) and y-intercept (b) values using gradient descent.
+    this.m = this.m - mseSlopeByM * this.options.learningRate;
+    this.b = this.b - mseSlopeByB * this.options.learningRate;
   }
 
   /**
