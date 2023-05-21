@@ -1,7 +1,7 @@
-import { runKnnAnalysis } from "./analyzer";
+import { runLinearRegressionAnalysis } from "./analyzer";
 
 const start = (): void => {
-  runKnnAnalysis();
+  runLinearRegressionAnalysis();
 };
 
 start();
