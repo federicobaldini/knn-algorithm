@@ -72,6 +72,12 @@ class LinearRegression {
       this.gradientDescent();
     }
   }
+
+  test(testFeatures: Tensor<Rank>): void {
+    testFeatures = testFeatures.concat(ones([testFeatures.shape[0], 1]), 1);
+    const predictions: Tensor<Rank> = testFeatures.matMul(this.weights);
+    predictions.print();
+  }
 }
 
 export { LinearRegression };
