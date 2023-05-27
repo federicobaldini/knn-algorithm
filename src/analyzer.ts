@@ -55,9 +55,11 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
   let {
     features, // input features for training data.
     labels, // output labels for training data.
-    // testFeatures, // input features for test data.
-    // testLabels, // output labels for test data.
-  }: {
+    testFeatures, // input features for test data.
+    testLabels, // output labels for test data.
+  }: // testFeatures, // input features for test data.
+  // testLabels, // output labels for test data.
+  {
     features: Dataset;
     labels: Dataset;
     testFeatures?: Dataset;
@@ -70,8 +72,8 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
   });
 
   const linearRegression: LinearRegression = new LinearRegression(
-    features,
-    labels,
+    tensor(features),
+    tensor(labels),
     { learningRate: 0.0001, iterations: 100 }
   );
 
@@ -79,6 +81,10 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
 
   console.log("Updated M is:", linearRegression.getM());
   console.log("Updated B is:", linearRegression.getB());
+
+  if (testFeatures && testLabels) {
+    linearRegression.test(tensor(testFeatures));
+  }
 };
 
 export { runKnnAnalysis, runLinearRegressionAnalysis };
