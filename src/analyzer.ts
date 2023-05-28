@@ -83,7 +83,11 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
   console.log("Updated B is:", linearRegression.getB());
 
   if (testFeatures && testLabels) {
-    linearRegression.test(tensor(testFeatures));
+    const r2: number = linearRegression.test(
+      tensor(testFeatures),
+      tensor(testLabels)
+    );
+    console.log("R2 is:", r2);
   }
 };
 
