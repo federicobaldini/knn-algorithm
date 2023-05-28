@@ -13,9 +13,9 @@ type Options = {
  * and dependent variables (labels) using gradient descent optimization.
  */
 class LinearRegression {
-  private features: Tensor<Rank>;
-  private labels: Tensor<Rank>;
-  private options: Options;
+  private features: Tensor<Rank>; // Input features for training data
+  private labels: Tensor<Rank>; // Output labels for training data
+  private options: Options; // Configuration options for the model
   private weights: Tensor<Rank>; // Contains the slope (m) and y-intercept (b) values.
 
   /**
@@ -26,6 +26,7 @@ class LinearRegression {
    * @param options - The configuration options for the model.
    */
   constructor(features: Tensor<Rank>, labels: Tensor<Rank>, options?: Options) {
+    // Concatenate a column of ones to the features tensor
     this.features = features.concat(ones([features.shape[0], 1]), 1);
     this.labels = labels;
 
@@ -38,10 +39,16 @@ class LinearRegression {
     this.weights = zeros([2, 1]);
   }
 
+  /**
+   * Gets the slope (m) of the linear regression line.
+   */
   getM(): number {
     return (this.weights.arraySync() as Array<number>)[0];
   }
 
+  /**
+   * Gets the y-intercept (b) of the linear regression line.
+   */
   getB(): number {
     return (this.weights.arraySync() as Array<number>)[1];
   }
