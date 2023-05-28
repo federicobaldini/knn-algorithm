@@ -80,10 +80,33 @@ class LinearRegression {
     }
   }
 
-  test(testFeatures: Tensor<Rank>): void {
+  /**
+   * Tests the trained linear regression model using test features and labels.
+   *
+   * @param testFeatures - The test data features.
+   * @param testLabels - The test data labels.
+   * @returns The coefficient of determination (R^2) for the predictions.
+   */
+  test(testFeatures: Tensor<Rank>, testLabels: Tensor<Rank>): number {
     testFeatures = testFeatures.concat(ones([testFeatures.shape[0], 1]), 1);
     const predictions: Tensor<Rank> = testFeatures.matMul(this.weights);
-    predictions.print();
+
+    // Calculate the sum of squares of residuals (label - predicted)^2
+    const sumOfSquaresOfResiduals: number = testLabels
+      .sub(predictions)
+      .pow(2)
+      .sum()
+      .arraySync() as number;
+
+    // Calculate the total sum of squares (label - average)^2
+    const totalSumOfSquares: number = testLabels
+      .sub(testLabels.mean())
+      .pow(2)
+      .sum()
+      .arraySync() as number;
+
+    // Calculate the coefficient of determination (R^2)
+    return 1 - sumOfSquaresOfResiduals / totalSumOfSquares;
   }
 }
 
