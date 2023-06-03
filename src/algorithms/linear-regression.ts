@@ -26,8 +26,7 @@ class LinearRegression {
    * @param options - The configuration options for the model.
    */
   constructor(features: Tensor<Rank>, labels: Tensor<Rank>, options?: Options) {
-    // Concatenate a column of ones to the features tensor
-    this.features = features.concat(ones([features.shape[0], 1]), 1);
+    this.features = this.processFeatures(features);
     this.labels = labels;
 
     // Set default options if not provided.
@@ -88,7 +87,7 @@ class LinearRegression {
    * @returns The coefficient of determination (R^2) for the predictions.
    */
   test(testFeatures: Tensor<Rank>, testLabels: Tensor<Rank>): number {
-    testFeatures = testFeatures.concat(ones([testFeatures.shape[0], 1]), 1);
+    testFeatures = this.processFeatures(testFeatures);
     const predictions: Tensor<Rank> = testFeatures.matMul(this.weights);
 
     // Calculate the sum of squares of residuals (label - predicted)^2
@@ -107,6 +106,18 @@ class LinearRegression {
 
     // Calculate the coefficient of determination (R^2)
     return 1 - sumOfSquaresOfResiduals / totalSumOfSquares;
+  }
+
+  /**
+   * Adds a column of ones to the features tensor for linear regression.
+   *
+   * @param features - The input features tensor.
+   * @returns The modified features tensor with an additional column of ones.
+   */
+  processFeatures(features: Tensor<Rank>): Tensor<Rank> {
+    // Concatenate a column of ones to the features tensor
+    features = features.concat(ones([features.shape[0], 1]), 1);
+    return features;
   }
 }
 
