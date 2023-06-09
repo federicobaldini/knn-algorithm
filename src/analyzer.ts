@@ -74,7 +74,7 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
   const linearRegression: LinearRegression = new LinearRegression(
     tensor(features),
     tensor(labels),
-    { learningRate: 0.0001, iterations: 100 }
+    { learningRate: 0.1, iterations: 100 }
   );
 
   linearRegression.train();
