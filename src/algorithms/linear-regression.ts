@@ -1,4 +1,4 @@
-import { Tensor, Rank, ones, zeros } from "@tensorflow/tfjs";
+import { Tensor, Rank, ones, zeros, moments } from "@tensorflow/tfjs";
 
 // Define the Options type for configuration.
 type Options = {
@@ -13,10 +13,12 @@ type Options = {
  * and dependent variables (labels) using gradient descent optimization.
  */
 class LinearRegression {
-  private features: Tensor<Rank>; // Input features for training data
-  private labels: Tensor<Rank>; // Output labels for training data
-  private options: Options; // Configuration options for the model
+  private features: Tensor<Rank>; // Input features for training data.
+  private labels: Tensor<Rank>; // Output labels for training data.
+  private options: Options; // Configuration options for the model.
   private weights: Tensor<Rank>; // Contains the slope (m) and y-intercept (b) values.
+  private mean: Tensor<Rank> | undefined; // Mean tensor for standardization.
+  private variance: Tensor<Rank> | undefined; // Variance tensor for standardization.
 
   /**
    * Creates an instance of LinearRegression.
@@ -36,6 +38,8 @@ class LinearRegression {
     );
 
     this.weights = zeros([2, 1]);
+    this.mean = undefined;
+    this.variance = undefined;
   }
 
   /**
@@ -115,8 +119,40 @@ class LinearRegression {
    * @returns The modified features tensor with an additional column of ones.
    */
   processFeatures(features: Tensor<Rank>): Tensor<Rank> {
+    features = this.standardize(features);
+
     // Concatenate a column of ones to the features tensor
     features = features.concat(ones([features.shape[0], 1]), 1);
+
+    return features;
+  }
+
+  /**
+   * Initializes the mean and variance tensors for feature standardization.
+   *
+   * @param features - The input features tensor.
+   */
+  initStandardizationParameters(features: Tensor<Rank>): void {
+    const { mean, variance }: { mean: Tensor<Rank>; variance: Tensor<Rank> } =
+      moments(features, 0);
+
+    this.mean = mean;
+    this.variance = variance;
+  }
+
+  /**
+   * Standardizes the features tensor by subtracting the mean and dividing by the standard deviation.
+   *
+   * @param features - The input features tensor.
+   * @returns The standardized features tensor.
+   */
+  standardize(features: Tensor<Rank>): Tensor<Rank> {
+    if (!this.mean || !this.variance) {
+      this.initStandardizationParameters(features);
+    }
+    if (this.mean && this.variance) {
+      return features.sub(this.mean).div(this.variance.pow(0.5));
+    }
     return features;
   }
 }
