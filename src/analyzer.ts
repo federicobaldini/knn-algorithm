@@ -1,7 +1,7 @@
 import { tensor } from "@tensorflow/tfjs";
 import { knn } from "./algorithms/k-nearest-neighbors";
 import { loadCSV } from "./csv-loader";
-import { LinearRegression } from "./algorithms/linear-regression2";
+import { LinearRegression } from "./algorithms/linear-regression";
 
 type Dataset = Array<Array<string | number>>;
 
