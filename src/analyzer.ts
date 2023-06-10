@@ -1,7 +1,7 @@
 import { tensor } from "@tensorflow/tfjs";
 import { knn } from "./algorithms/k-nearest-neighbors";
 import { loadCSV } from "./csv-loader";
-import { LinearRegression } from "./algorithms/linear-regression";
+import { LinearRegression } from "./algorithms/linear-regression2";
 
 type Dataset = Array<Array<string | number>>;
 
@@ -74,7 +74,7 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
   const linearRegression: LinearRegression = new LinearRegression(
     tensor(features),
     tensor(labels),
-    { learningRate: 0.1, iterations: 100 }
+    { learningRate: 10, iterations: 100 }
   );
 
   linearRegression.train();
