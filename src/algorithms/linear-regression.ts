@@ -19,6 +19,7 @@ class LinearRegression {
   private weights: Tensor<Rank>; // Contains the slope (m) and y-intercept (b) values.
   private mean: Tensor<Rank> | undefined; // Mean tensor for standardization.
   private variance: Tensor<Rank> | undefined; // Variance tensor for standardization.
+  private mseHistory: Array<number>; // Stores the history of mean squared errors during training.
 
   /**
    * Creates an instance of LinearRegression.
@@ -30,6 +31,7 @@ class LinearRegression {
   constructor(features: Tensor<Rank>, labels: Tensor<Rank>, options?: Options) {
     this.features = this.initFeatures(features);
     this.labels = labels;
+    this.mseHistory = [];
 
     // Set default options if not provided.
     this.options = Object.assign(
@@ -37,6 +39,7 @@ class LinearRegression {
       options
     );
 
+    // Initialize the weights tensor based on the number of features.
     if (this.features.shape[1]) {
       this.weights = zeros([this.features.shape[1], 1]);
     } else {
@@ -65,7 +68,10 @@ class LinearRegression {
    * Performs gradient descent optimization to update the model parameters.
    */
   gradientDescent(): void {
+    // Calculate the current predictions.
     const currentGuesses: Tensor<Rank> = this.features.matMul(this.weights);
+
+    // Calculate the differences between predictions and labels.
     const differences: Tensor<Rank> = currentGuesses.sub(this.labels);
 
     // Calculate the slopes (gradients) using the differences and features.
@@ -85,6 +91,7 @@ class LinearRegression {
     for (let i = 0; i < this.options.iterations; i += 1) {
       // Perform gradient descent for the specified number of iterations.
       this.gradientDescent();
+      this.recordMSE();
     }
   }
 
@@ -124,6 +131,7 @@ class LinearRegression {
    * @returns The modified features tensor with an additional column of ones.
    */
   initFeatures(features: Tensor<Rank>): Tensor<Rank> {
+    // Standardize the features tensor.
     features = this.standardize(features);
 
     // Concatenate a column of ones to the features tensor
@@ -138,9 +146,11 @@ class LinearRegression {
    * @param features - The input features tensor.
    */
   initStandardizationParameters(features: Tensor<Rank>): void {
+    // Calculate the mean and variance tensors.
     const { mean, variance }: { mean: Tensor<Rank>; variance: Tensor<Rank> } =
       moments(features, 0);
 
+    // Store the mean and variance tensors.
     this.mean = mean;
     this.variance = variance;
   }
@@ -159,6 +169,25 @@ class LinearRegression {
       return features.sub(this.mean).div(this.variance.pow(0.5));
     }
     return features;
+  }
+
+  /**
+   * Records the mean squared error (MSE) during training.
+   */
+  recordMSE(): void {
+    // Calculate the mean squared error (MSE) using the current weights and training data.
+    const mse: number = (
+      this.features
+        .matMul(this.weights)
+        .sub(this.labels)
+        .pow(2)
+        .sum()
+        .div(this.features.shape[0])
+        .arraySync() as Array<number>
+    )[0];
+
+    // Store the MSE in the history array.
+    this.mseHistory.push(mse);
   }
 }
 
