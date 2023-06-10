@@ -92,6 +92,7 @@ class LinearRegression {
       // Perform gradient descent for the specified number of iterations.
       this.gradientDescent();
       this.recordMSE();
+      this.updateLearningRate();
     }
   }
 
@@ -162,12 +163,20 @@ class LinearRegression {
    * @returns The standardized features tensor.
    */
   standardize(features: Tensor<Rank>): Tensor<Rank> {
+    // Check if the mean and variance tensors are not initialized
     if (!this.mean || !this.variance) {
+      // Calculate and store the mean and variance tensors
       this.initStandardizationParameters(features);
     }
+
+    // Check if the mean and variance tensors are available
     if (this.mean && this.variance) {
+      // Perform standardization on the features tensor
+      // by subtracting the mean and dividing by the standard deviation
       return features.sub(this.mean).div(this.variance.pow(0.5));
     }
+
+    // If mean and variance tensors are not available, return the original features tensor
     return features;
   }
 
@@ -176,18 +185,37 @@ class LinearRegression {
    */
   recordMSE(): void {
     // Calculate the mean squared error (MSE) using the current weights and training data.
-    const mse: number = (
-      this.features
-        .matMul(this.weights)
-        .sub(this.labels)
-        .pow(2)
-        .sum()
-        .div(this.features.shape[0])
-        .arraySync() as Array<number>
-    )[0];
+    const mse: number = this.features
+      .matMul(this.weights)
+      .sub(this.labels)
+      .pow(2)
+      .sum()
+      .div(this.features.shape[0])
+      .arraySync() as number;
 
     // Store the MSE in the history array.
-    this.mseHistory.push(mse);
+    this.mseHistory.unshift(mse);
+  }
+
+  /**
+   * Updates the learning rate based on the mean squared error history.
+   * If the last MSE is greater than the second last MSE, the learning rate is halved.
+   * If the last MSE is not greater than the second last MSE, the learning rate is increased by 5%.
+   */
+  updateLearningRate() {
+    // Check if enough MSE values are available for comparison
+    if (this.mseHistory.length < 2) {
+      return;
+    }
+
+    // Compare the last MSE value with the second last MSE value
+    if (this.mseHistory[0] > this.mseHistory[1]) {
+      // Last MSE is greater than the second last MSE, indicating increasing MSE
+      this.options.learningRate /= 2; // Halve the learning rate
+    } else {
+      // Last MSE is not greater than the second last MSE, indicating decreasing or stable MSE
+      this.options.learningRate *= 1.05; // Increase the learning rate by 5%
+    }
   }
 }
 
