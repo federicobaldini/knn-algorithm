@@ -37,7 +37,12 @@ class LinearRegression {
       options
     );
 
-    this.weights = zeros([2, 1]);
+    if (this.features.shape[1]) {
+      this.weights = zeros([this.features.shape[1], 1]);
+    } else {
+      throw new Error("The 'features' tensor has an undefined shape[1].");
+    }
+
     this.mean = undefined;
     this.variance = undefined;
   }

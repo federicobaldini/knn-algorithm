@@ -65,7 +65,7 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
     testFeatures?: Dataset;
     testLabels?: Dataset;
   } = loadCSV("cars.csv", {
-    datasetColumns: ["horsepower"],
+    datasetColumns: ["horsepower", "weight", "displacement"],
     labelColumns: ["mpg"],
     shuffle: true,
     splitTest: 50,
