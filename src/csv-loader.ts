@@ -77,7 +77,7 @@ const loadCSV = (
     .map((dataset: string): Array<string> => dataset.split(","));
 
   // Remove any rows that contain empty strings (which can happen if there are trailing commas in the CSV file).
-  dataset = dropRightWhile(dataset, (value: Array<string | number>): boolean =>
+  dataset = dropRightWhile(dataset, (value: Array<string>): boolean =>
     isEqual(value, [""])
   );
 
