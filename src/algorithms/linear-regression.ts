@@ -4,6 +4,7 @@ import { Tensor, Rank, ones, zeros, moments } from "@tensorflow/tfjs";
 type Options = {
   learningRate: number;
   iterations: number;
+  batchSize?: number;
 };
 
 /**
@@ -33,13 +34,21 @@ class LinearRegression {
     this.labels = labels;
     this.mseHistory = [];
 
-    // Set default options if not provided.
+    // Set default options if not provided
     this.options = Object.assign(
-      { learningRate: 0.1, iterations: 1000 },
+      {
+        learningRate: 10,
+        iterations: 100,
+        batchSize: this.features.shape[0],
+      },
       options
     );
 
-    // Initialize the weights tensor based on the number of features.
+    if ((this.options.batchSize as number) < 1) {
+      throw new Error("The batchSize must be greater than zero.");
+    }
+
+    // Initialize the weights tensor based on the number of features
     if (this.features.shape[1]) {
       this.weights = zeros([this.features.shape[1], 1]);
     } else {
@@ -67,33 +76,75 @@ class LinearRegression {
   /**
    * Performs gradient descent optimization to update the model parameters.
    */
-  gradientDescent(): void {
-    // Calculate the current predictions.
-    const currentGuesses: Tensor<Rank> = this.features.matMul(this.weights);
+  gradientDescent(features: Tensor<Rank>, labels: Tensor<Rank>): void {
+    // Calculate the current predictions
+    const currentGuesses: Tensor<Rank> = features.matMul(this.weights);
 
-    // Calculate the differences between predictions and labels.
-    const differences: Tensor<Rank> = currentGuesses.sub(this.labels);
+    // Calculate the differences between predictions and labels
+    const differences: Tensor<Rank> = currentGuesses.sub(labels);
 
-    // Calculate the slopes (gradients) using the differences and features.
-    const slopes: Tensor<Rank> = this.features
+    // Calculate the slope (gradients) of MSE using the differences and features
+    const slope: Tensor<Rank> = features
       .transpose()
       .matMul(differences)
-      .div(this.features.shape[0]);
+      .div(features.shape[0]);
 
-    // Update the weights using the calculated slopes and learning rate.
-    this.weights = this.weights.sub(slopes.mul(this.options.learningRate));
+    // Update the weights using the calculated slope and learning rate
+    this.weights = this.weights.sub(slope.mul(this.options.learningRate));
   }
 
   /**
    * Trains the linear regression model by performing gradient descent optimization.
    */
   train(): void {
+    const batchSize: number = this.options.batchSize as number;
+
+    // Calculate the number of batches based on the total number of training data and batch size
+    const batchQuantity: number = Math.floor(
+      this.features.shape[0] / batchSize
+    );
+
+    // Iterate over the specified number of iterations
     for (let i = 0; i < this.options.iterations; i += 1) {
-      // Perform gradient descent for the specified number of iterations.
-      this.gradientDescent();
+      // Iterate over each batch.
+      for (let j = 0; j < batchQuantity; j += 1) {
+        // Calculate the starting index of the current batch
+        const startIndex: number = j * batchSize;
+        // Create a slice of features tensor corresponding to the current batch
+        const featuresSlice: Tensor<Rank> = this.features.slice(
+          [startIndex, 0],
+          [batchSize, -1]
+        );
+
+        // Create a slice of labels tensor corresponding to the current batch
+        const labelsSlice = this.labels.slice([startIndex, 0], [batchSize, -1]);
+
+        // Perform gradient descent optimization using the current batch
+        this.gradientDescent(featuresSlice, labelsSlice);
+      }
+      // Record the mean squared error (MSE) during training
       this.recordMSE();
+
+      // Update the learning rate based on the MSE history
       this.updateLearningRate();
     }
+  }
+
+  /**
+   * Predicts the output labels for the given input observations.
+   *
+   * @param observations - The input observations for prediction.
+   * @returns The predicted output labels.
+   */
+  predict(observations: Tensor<Rank>): Tensor<Rank> {
+    // Initialize the features tensor for the input observations
+    const features: Tensor<Rank> = this.initFeatures(observations);
+
+    // Perform matrix multiplication of the features tensor and weights tensor
+    // to generate the predicted output labels
+    const predictions: Tensor<Rank> = features.matMul(this.weights);
+
+    return predictions;
   }
 
   /**
@@ -104,8 +155,7 @@ class LinearRegression {
    * @returns The coefficient of determination (R^2) for the predictions.
    */
   test(testFeatures: Tensor<Rank>, testLabels: Tensor<Rank>): number {
-    testFeatures = this.initFeatures(testFeatures);
-    const predictions: Tensor<Rank> = testFeatures.matMul(this.weights);
+    const predictions: Tensor<Rank> = this.predict(testFeatures);
 
     // Calculate the sum of squares of residuals (label - predicted)^2
     const sumOfSquaresOfResiduals: number = testLabels
