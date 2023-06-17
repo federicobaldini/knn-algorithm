@@ -2,7 +2,7 @@ import { tensor } from "@tensorflow/tfjs";
 import { knn } from "./algorithms/k-nearest-neighbors";
 import { loadCSV } from "./csv-loader";
 import { LinearRegression } from "./algorithms/linear-regression";
-import { LogisticRegression } from "./algorithms/logistic-regression";
+import { BinaryLogisticRegression } from "./algorithms/binary-logistic-regression";
 
 type Dataset = Array<Array<string | number>>;
 
@@ -85,7 +85,7 @@ const runLinearRegressionAnalysis = async (): Promise<void> => {
   linearRegression.predict(tensor([[120, 2, 380]])).print();
 };
 
-const runLogisticRegressionAnalysis = async (): Promise<void> => {
+const runBinaryLogisticRegressionAnalysis = async (): Promise<void> => {
   let {
     features, // input features for training data.
     labels, // output labels for training data.
@@ -108,16 +108,23 @@ const runLogisticRegressionAnalysis = async (): Promise<void> => {
     },
   });
 
-  const logisticRegression: LogisticRegression = new LogisticRegression(
-    tensor(features),
-    tensor(labels),
-    { learningRate: 0.1, iterations: 3, batchSize: 10, decisionBoundary: 0.6 }
-  );
+  const binaryLogisticRegression: BinaryLogisticRegression =
+    new BinaryLogisticRegression(tensor(features), tensor(labels), {
+      learningRate: 0.1,
+      iterations: 3,
+      batchSize: 10,
+      decisionBoundary: 0.6,
+    });
 
-  logisticRegression.train();
+  binaryLogisticRegression.train();
 
   if (testFeatures && testLabels) {
-    logisticRegression.test(tensor(testFeatures), tensor(testLabels));
+    binaryLogisticRegression.test(tensor(testFeatures), tensor(testLabels));
+  }
+
+  binaryLogisticRegression.predict(tensor([[88, 1.065, 127]])).print();
+  binaryLogisticRegression.predict(tensor([[120, 2, 380]])).print();
+};
   }
 
   logisticRegression.predict(tensor([[88, 1.065, 127]])).print();
@@ -127,5 +134,5 @@ const runLogisticRegressionAnalysis = async (): Promise<void> => {
 export {
   runKnnAnalysis,
   runLinearRegressionAnalysis,
-  runLogisticRegressionAnalysis,
+  runBinaryLogisticRegressionAnalysis,
 };

@@ -1,11 +1,11 @@
 import {
   runLinearRegressionAnalysis,
-  runLogisticRegressionAnalysis,
+  runBinaryLogisticRegressionAnalysis,
 } from "./analyzer";
 
 const start = (): void => {
   runLinearRegressionAnalysis();
-  runLogisticRegressionAnalysis();
+  runBinaryLogisticRegressionAnalysis();
 };
 
 start();

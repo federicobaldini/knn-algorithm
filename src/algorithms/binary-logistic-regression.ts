@@ -9,12 +9,12 @@ type Options = {
 };
 
 /**
- * Represents a linear regression model.
+ * Represents a binary logistic regression model.
  *
  * The model learns the relationship between independent variables (features)
  * and dependent variables (labels) using gradient descent optimization.
  */
-class LogisticRegression {
+class BinaryLogisticRegression {
   private features: Tensor<Rank>; // Input features for training data.
   private labels: Tensor<Rank>; // Output labels for training data.
   private options: Options; // Configuration options for the model.
@@ -271,4 +271,4 @@ class LogisticRegression {
   }
 }
 
-export { LogisticRegression };
+export { BinaryLogisticRegression };
