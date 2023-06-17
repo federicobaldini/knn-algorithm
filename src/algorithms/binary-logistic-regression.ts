@@ -60,9 +60,6 @@ class BinaryLogisticRegression {
     } else {
       throw new Error("The 'features' tensor has an undefined shape[1].");
     }
-
-    this.mean = undefined;
-    this.variance = undefined;
   }
 
   /**
@@ -169,7 +166,7 @@ class BinaryLogisticRegression {
    * @returns The modified features tensor with an additional column of ones.
    */
   initFeatures(features: Tensor<Rank>): Tensor<Rank> {
-    // Standardize the features tensor.
+    // Standardize the features tensor
     features = this.standardize(features);
 
     // Concatenate a column of ones to the features tensor
@@ -184,11 +181,11 @@ class BinaryLogisticRegression {
    * @param features - The input features tensor.
    */
   initStandardizationParameters(features: Tensor<Rank>): void {
-    // Calculate the mean and variance tensors.
+    // Calculate the mean and variance tensors
     const { mean, variance }: { mean: Tensor<Rank>; variance: Tensor<Rank> } =
       moments(features, 0);
 
-    // Store the mean and variance tensors.
+    // Store the mean and variance tensors
     this.mean = mean;
     this.variance = variance;
   }
