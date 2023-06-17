@@ -3,6 +3,8 @@ import { knn } from "./algorithms/k-nearest-neighbors";
 import { loadCSV } from "./csv-loader";
 import { LinearRegression } from "./algorithms/linear-regression";
 import { BinaryLogisticRegression } from "./algorithms/binary-logistic-regression";
+import { MultinominalLogisticRegression } from "./algorithms/multinominal-logistic-regression";
+import { flatMap } from "lodash";
 
 type Dataset = Array<Array<string | number>>;
 
@@ -110,8 +112,8 @@ const runBinaryLogisticRegressionAnalysis = async (): Promise<void> => {
 
   const binaryLogisticRegression: BinaryLogisticRegression =
     new BinaryLogisticRegression(tensor(features), tensor(labels), {
-      learningRate: 0.1,
-      iterations: 3,
+      learningRate: 0.5,
+      iterations: 100,
       batchSize: 10,
       decisionBoundary: 0.6,
     });
@@ -125,14 +127,64 @@ const runBinaryLogisticRegressionAnalysis = async (): Promise<void> => {
   binaryLogisticRegression.predict(tensor([[88, 1.065, 127]])).print();
   binaryLogisticRegression.predict(tensor([[120, 2, 380]])).print();
 };
-  }
 
-  logisticRegression.predict(tensor([[88, 1.065, 127]])).print();
-  logisticRegression.predict(tensor([[120, 2, 380]])).print();
+const runMultinominalLogisticRegressionAnalysis = async (): Promise<void> => {
+  let {
+    features, // input features for training data.
+    labels, // output labels for training data.
+    testFeatures, // input features for test data.
+    testLabels, // output labels for test data.
+  }: {
+    features: Dataset;
+    labels: Dataset;
+    testFeatures?: Dataset;
+    testLabels?: Dataset;
+  } = loadCSV("cars.csv", {
+    datasetColumns: ["horsepower", "weight", "displacement"],
+    labelColumns: ["mpg"],
+    shuffle: true,
+    splitTest: 50,
+    converters: {
+      mpg: (value: string): Array<number> => {
+        const mpg: number = parseFloat(value);
+        if (mpg < 15.0) {
+          return [1, 0, 0];
+        }
+        if (mpg < 30.0) {
+          return [0, 1, 0];
+        }
+        return [0, 0, 1];
+      },
+    },
+  });
+
+  const multinominalLogisticRegression: MultinominalLogisticRegression =
+    new MultinominalLogisticRegression(
+      tensor(features),
+      tensor(flatMap(labels)),
+      {
+        learningRate: 0.5,
+        iterations: 100,
+        batchSize: 10,
+      }
+    );
+
+  multinominalLogisticRegression.train();
+  multinominalLogisticRegression.predict(tensor([[215, 2.16, 440]])).print();
+
+  if (testFeatures && testLabels) {
+    /*
+    multinominalLogisticRegression.test(
+      tensor(testFeatures),
+      tensor(testLabels)
+    );
+    */
+  }
 };
 
 export {
   runKnnAnalysis,
   runLinearRegressionAnalysis,
   runBinaryLogisticRegressionAnalysis,
+  runMultinominalLogisticRegressionAnalysis,
 };
