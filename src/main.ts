@@ -1,11 +1,7 @@
-import {
-  runLinearRegressionAnalysis,
-  runBinaryLogisticRegressionAnalysis,
-} from "./analyzer";
+import { runMultinominalLogisticRegressionAnalysis } from "./analyzer";
 
 const start = (): void => {
-  runLinearRegressionAnalysis();
-  runBinaryLogisticRegressionAnalysis();
+  runMultinominalLogisticRegressionAnalysis();
 };
 
 start();
