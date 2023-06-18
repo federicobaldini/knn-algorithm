@@ -14,12 +14,12 @@ type Options = {
  * and dependent variables (labels) using gradient descent optimization.
  */
 class LinearRegression {
-  private features: Tensor<Rank>; // Input features for training data.
-  private labels: Tensor<Rank>; // Output labels for training data.
+  private features: Tensor<Rank.R2>; // Input features for training data.
+  private labels: Tensor<Rank.R2>; // Output labels for training data.
   private options: Options; // Configuration options for the model.
-  private weights: Tensor<Rank>; // Contains the slope (m) and y-intercept (b) values.
-  private mean: Tensor<Rank> | undefined; // Mean tensor for standardization.
-  private variance: Tensor<Rank> | undefined; // Variance tensor for standardization.
+  private weights: Tensor<Rank.R2>; // Contains the slope (m) and y-intercept (b) values.
+  private mean: Tensor<Rank.R1> | undefined; // Mean tensor for standardization.
+  private variance: Tensor<Rank.R1> | undefined; // Variance tensor for standardization.
   private mseHistory: Array<number>; // Stores the history of mean squared errors during training.
 
   /**
@@ -29,7 +29,11 @@ class LinearRegression {
    * @param labels - The training data labels.
    * @param options - The configuration options for the model.
    */
-  constructor(features: Tensor<Rank>, labels: Tensor<Rank>, options?: Options) {
+  constructor(
+    features: Tensor<Rank.R2>,
+    labels: Tensor<Rank.R2>,
+    options?: Options
+  ) {
     this.features = this.initFeatures(features);
     this.labels = labels;
     this.mseHistory = [];
@@ -57,31 +61,19 @@ class LinearRegression {
   }
 
   /**
-   * Gets the slope (m) of the linear regression line.
-   */
-  getM(): number {
-    return (this.weights.arraySync() as Array<number>)[0];
-  }
-
-  /**
-   * Gets the y-intercept (b) of the linear regression line.
-   */
-  getB(): number {
-    return (this.weights.arraySync() as Array<number>)[1];
-  }
-
-  /**
    * Performs gradient descent optimization to update the model parameters.
    */
-  gradientDescent(features: Tensor<Rank>, labels: Tensor<Rank>): void {
+  gradientDescent(features: Tensor<Rank.R2>, labels: Tensor<Rank.R2>): void {
     // Calculate the current predictions
-    const currentGuesses: Tensor<Rank> = features.matMul(this.weights);
+    const currentGuesses: Tensor<Rank.R2> = features.matMul(
+      this.weights
+    ) as Tensor<Rank.R2>;
 
     // Calculate the differences between predictions and labels
-    const differences: Tensor<Rank> = currentGuesses.sub(labels);
+    const differences: Tensor<Rank.R2> = currentGuesses.sub(labels);
 
     // Calculate the slope (gradients) of MSE using the differences and features
-    const slope: Tensor<Rank> = features
+    const slope: Tensor<Rank.R2> = features
       .transpose()
       .matMul(differences)
       .div(features.shape[0]);
@@ -108,7 +100,7 @@ class LinearRegression {
         // Calculate the starting index of the current batch
         const startIndex: number = j * batchSize;
         // Create a slice of features tensor corresponding to the current batch
-        const featuresSlice: Tensor<Rank> = this.features.slice(
+        const featuresSlice: Tensor<Rank.R2> = this.features.slice(
           [startIndex, 0],
           [batchSize, -1]
         );
@@ -133,13 +125,15 @@ class LinearRegression {
    * @param observations - The input observations for prediction.
    * @returns The predicted output labels.
    */
-  predict(observations: Tensor<Rank>): Tensor<Rank> {
+  predict(observations: Tensor<Rank.R2>): Tensor<Rank.R2> {
     // Initialize the features tensor for the input observations
-    const features: Tensor<Rank> = this.initFeatures(observations);
+    const features: Tensor<Rank.R2> = this.initFeatures(observations);
 
     // Perform matrix multiplication of the features tensor and weights tensor
     // to generate the predicted output labels
-    const predictions: Tensor<Rank> = features.matMul(this.weights);
+    const predictions: Tensor<Rank.R2> = features.matMul(
+      this.weights
+    ) as Tensor<Rank.R2>;
 
     return predictions;
   }
@@ -151,8 +145,8 @@ class LinearRegression {
    * @param testLabels - The test data labels.
    * @returns The coefficient of determination (R^2) for the predictions.
    */
-  test(testFeatures: Tensor<Rank>, testLabels: Tensor<Rank>): number {
-    const predictions: Tensor<Rank> = this.predict(testFeatures);
+  test(testFeatures: Tensor<Rank.R2>, testLabels: Tensor<Rank.R2>): number {
+    const predictions: Tensor<Rank.R2> = this.predict(testFeatures);
 
     // Calculate the sum of squares of residuals (label - predicted)^2
     const sumOfSquaresOfResiduals: number = testLabels
@@ -178,7 +172,7 @@ class LinearRegression {
    * @param features - The input features tensor.
    * @returns The modified features tensor with an additional column of ones.
    */
-  initFeatures(features: Tensor<Rank>): Tensor<Rank> {
+  initFeatures(features: Tensor<Rank.R2>): Tensor<Rank.R2> {
     // Standardize the features tensor
     features = this.standardize(features);
 
@@ -193,14 +187,14 @@ class LinearRegression {
    *
    * @param features - The input features tensor.
    */
-  initStandardizationParameters(features: Tensor<Rank>): void {
+  initStandardizationParameters(features: Tensor<Rank.R2>): void {
     // Calculate the mean and variance tensors
     const { mean, variance }: { mean: Tensor<Rank>; variance: Tensor<Rank> } =
       moments(features, 0);
 
     // Store the mean and variance tensors
-    this.mean = mean;
-    this.variance = variance;
+    this.mean = mean as Tensor<Rank.R1>;
+    this.variance = variance as Tensor<Rank.R1>;
   }
 
   /**
@@ -209,7 +203,7 @@ class LinearRegression {
    * @param features - The input features tensor.
    * @returns The standardized features tensor.
    */
-  standardize(features: Tensor<Rank>): Tensor<Rank> {
+  standardize(features: Tensor<Rank.R2>): Tensor<Rank.R2> {
     // Check if the mean and variance tensors are not initialized
     if (!this.mean || !this.variance) {
       // Calculate and store the mean and variance tensors
