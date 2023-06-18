@@ -5,6 +5,7 @@ import { LinearRegression } from "./algorithms/linear-regression";
 import { BinaryLogisticRegression } from "./algorithms/binary-logistic-regression";
 import { MultinominalLogisticRegression } from "./algorithms/multinominal-logistic-regression";
 import { flatMap } from "lodash";
+import { training } from "mnist-data";
 
 type Dataset = Array<Array<string | number>>;
 
@@ -170,16 +171,22 @@ const runMultinominalLogisticRegressionAnalysis = async (): Promise<void> => {
     );
 
   multinominalLogisticRegression.train();
-  multinominalLogisticRegression.predict(tensor([[215, 2.16, 440]])).print();
 
   if (testFeatures && testLabels) {
-    /*
-    multinominalLogisticRegression.test(
-      tensor(testFeatures),
-      tensor(testLabels)
+    console.log(
+      multinominalLogisticRegression.test(
+        tensor(testFeatures),
+        tensor(flatMap(testLabels))
+      )
     );
-    */
   }
+
+  multinominalLogisticRegression.predict(tensor([[150, 2.223, 200]])).print();
+};
+
+const runImageRecognition = (): void => {
+  const mnistData = training(0, 1);
+  console.log(mnistData.images.values);
 };
 
 export {
@@ -187,4 +194,5 @@ export {
   runLinearRegressionAnalysis,
   runBinaryLogisticRegressionAnalysis,
   runMultinominalLogisticRegressionAnalysis,
+  runImageRecognition,
 };
