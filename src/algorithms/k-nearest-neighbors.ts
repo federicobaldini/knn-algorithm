@@ -24,15 +24,17 @@ import { Tensor, Rank, moments } from "@tensorflow/tfjs";
  * @returns The predicted label for the test point.
  */
 const knn = (
-  features: Tensor<Rank>,
-  labels: Tensor<Rank>,
-  predictionPoints: Tensor<Rank>,
+  features: Tensor<Rank.R2>,
+  labels: Tensor<Rank.R2>,
+  predictionPoints: Tensor<Rank.R2>,
   k: number
 ): number => {
   const { mean, variance }: { mean: Tensor<Rank>; variance: Tensor<Rank> } =
     moments(features, 0);
 
-  const scaledPredictionPoint: Tensor<Rank> = predictionPoints
+  features.print();
+
+  const scaledPredictionPoints: Tensor<Rank.R2> = predictionPoints
     .sub(mean)
     .div(variance.pow(0.5));
 
@@ -42,7 +44,7 @@ const knn = (
       .sub(mean)
       .div(variance.pow(0.5))
       // Find distances between the features and the prediction point.
-      .sub(scaledPredictionPoint)
+      .sub(scaledPredictionPoints)
       .pow(2)
       .sum(1)
       .pow(0.5)
