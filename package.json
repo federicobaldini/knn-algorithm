@@ -15,6 +15,7 @@
   "dependencies": {
     "@tensorflow/tfjs": "^4.4.0",
     "lodash": "^4.17.21",
-    "shuffle-seed": "^1.1.6"
+    "shuffle-seed": "^1.1.6",
+    "mnist-data": "^1.2.6"
   }
 }
