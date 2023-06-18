@@ -1,7 +1,7 @@
-import { runMultinominalLogisticRegressionAnalysis } from "./analyzer";
+import { runImageRecognition } from "./analyzer";
 
 const start = (): void => {
-  runMultinominalLogisticRegressionAnalysis();
+  runImageRecognition();
 };
 
 start();
