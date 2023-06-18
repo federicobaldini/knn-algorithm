@@ -192,9 +192,15 @@ class LinearRegression {
     const { mean, variance }: { mean: Tensor<Rank>; variance: Tensor<Rank> } =
       moments(features, 0);
 
+    // The filler will replace every '0' inside the variance with a 1, preventing division by '0'
+    const filler: Tensor<Rank> = variance
+      .cast("bool")
+      .logicalNot()
+      .cast("float32");
+
     // Store the mean and variance tensors
     this.mean = mean as Tensor<Rank.R1>;
-    this.variance = variance as Tensor<Rank.R1>;
+    this.variance = variance.add(filler) as Tensor<Rank.R1>;
   }
 
   /**
