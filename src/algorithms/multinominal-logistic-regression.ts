@@ -62,8 +62,6 @@ class MultinominalLogisticRegression {
         "The 'features' or 'labels' tensor has an undefined shape[1]."
       );
     }
-
-    this.weights.print();
   }
 
   /**
@@ -73,7 +71,7 @@ class MultinominalLogisticRegression {
     // Calculate the current predictions
     const currentGuesses: Tensor<Rank> = features
       .matMul(this.weights)
-      .sigmoid();
+      .softmax();
 
     // Calculate the differences between predictions and labels
     const differences: Tensor<Rank> = currentGuesses.sub(labels);
