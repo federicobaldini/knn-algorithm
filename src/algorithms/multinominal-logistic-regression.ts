@@ -137,9 +137,8 @@ class MultinominalLogisticRegression {
     // to generate the predicted output labels
     const predictions: Tensor<Rank> = features
       .matMul(this.weights)
-      .sigmoid()
-      .greater(this.options.decisionBoundary as number)
-      .cast("float32");
+      .softmax()
+      .argMax(1);
 
     return predictions;
   }
@@ -153,8 +152,7 @@ class MultinominalLogisticRegression {
   test(testFeatures: Tensor<Rank>, testLabels: Tensor<Rank>): number {
     const predictions: Tensor<Rank> = this.predict(testFeatures);
     const incorrect: number = predictions
-      .sub(testLabels)
-      .abs()
+      .notEqual(testLabels.argMax(1))
       .sum()
       .arraySync() as number;
 
@@ -222,8 +220,8 @@ class MultinominalLogisticRegression {
    * The calculated cost value is added to the beginning of the costHistory array.
    */
   recordCost(): void {
-    // Calculate the current predictions (probabilities) using sigmoid activation
-    const guesses: Tensor<Rank> = this.features.matMul(this.weights).sigmoid();
+    // Calculate the current predictions (probabilities) using softmax activation
+    const guesses: Tensor<Rank> = this.features.matMul(this.weights).softmax();
 
     // Calculate the termOne of the cross entropy cost
     const termOne = this.labels.transpose().matMul(guesses.log());
