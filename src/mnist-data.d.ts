@@ -1,4 +1,4 @@
 declare module "mnist-data" {
-  const training: any;
-  export { training };
+  const mnist: any;
+  export default mnist;
 }
