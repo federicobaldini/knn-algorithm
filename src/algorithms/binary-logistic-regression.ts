@@ -1,4 +1,4 @@
-import { Tensor, Rank, ones, zeros, moments } from "@tensorflow/tfjs";
+import { Tensor, Rank, ones, zeros, moments, tidy } from "@tensorflow/tfjs";
 
 // Define the Options type for configuration.
 type Options = {
@@ -69,7 +69,10 @@ class BinaryLogisticRegression {
   /**
    * Performs gradient descent optimization to update the model parameters.
    */
-  gradientDescent(features: Tensor<Rank.R2>, labels: Tensor<Rank.R2>): void {
+  gradientDescent(
+    features: Tensor<Rank.R2>,
+    labels: Tensor<Rank.R2>
+  ): Tensor<Rank.R2> {
     // Calculate the current predictions
     const currentGuesses: Tensor<Rank.R2> = features
       .matMul(this.weights)
@@ -84,8 +87,8 @@ class BinaryLogisticRegression {
       .matMul(differences)
       .div(features.shape[0]);
 
-    // Update the weights using the calculated slope and learning rate
-    this.weights = this.weights.sub(slope.mul(this.options.learningRate));
+    // Returns the weights using the calculated slope and learning rate
+    return this.weights.sub(slope.mul(this.options.learningRate));
   }
 
   /**
@@ -105,17 +108,24 @@ class BinaryLogisticRegression {
       for (let j = 0; j < batchQuantity; j += 1) {
         // Calculate the starting index of the current batch
         const startIndex: number = j * batchSize;
-        // Create a slice of features tensor corresponding to the current batch
-        const featuresSlice: Tensor<Rank.R2> = this.features.slice(
-          [startIndex, 0],
-          [batchSize, -1]
-        );
 
-        // Create a slice of labels tensor corresponding to the current batch
-        const labelsSlice = this.labels.slice([startIndex, 0], [batchSize, -1]);
+        // Update the weights using the calculated slope and learning rate
+        this.weights = tidy((): Tensor<Rank.R2> => {
+          // Create a slice of features tensor corresponding to the current batch
+          const featuresSlice: Tensor<Rank.R2> = this.features.slice(
+            [startIndex, 0],
+            [batchSize, -1]
+          );
 
-        // Perform gradient descent optimization using the current batch
-        this.gradientDescent(featuresSlice, labelsSlice);
+          // Create a slice of labels tensor corresponding to the current batch
+          const labelsSlice = this.labels.slice(
+            [startIndex, 0],
+            [batchSize, -1]
+          );
+
+          // Perform gradient descent optimization using the current batch
+          return this.gradientDescent(featuresSlice, labelsSlice);
+        });
       }
       // Record the cross entropy during training
       this.recordCost();
@@ -230,29 +240,37 @@ class BinaryLogisticRegression {
    * The calculated cost value is added to the beginning of the costHistory array.
    */
   recordCost(): void {
-    // Calculate the current predictions (probabilities) using sigmoid activation
-    const guesses: Tensor<Rank.R2> = this.features
-      .matMul(this.weights)
-      .sigmoid() as Tensor<Rank.R2>;
+    const cost: number = tidy((): number => {
+      // Calculate the current predictions (probabilities) using sigmoid activation
+      const guesses: Tensor<Rank.R2> = this.features
+        .matMul(this.weights)
+        .sigmoid() as Tensor<Rank.R2>;
 
-    // Calculate the termOne of the cross entropy cost
-    const termOne = this.labels.transpose().matMul(guesses.log());
+      // Calculate the termOne of the cross entropy cost
+      const termOne = this.labels.transpose().matMul(
+        guesses
+          .add(1e-7) // Add a costant to avoid log(0)
+          .log()
+      );
 
-    // Calculate the termTwo of the cross entropy cost
-    const termTwo = this.labels
-      .mul(-1)
-      .add(1)
-      .transpose()
-      .matMul(guesses.mul(-1).add(1).log());
+      // Calculate the termTwo of the cross entropy cost
+      const termTwo = this.labels.mul(-1).add(1).transpose().matMul(
+        guesses
+          .mul(-1)
+          .add(1)
+          .add(1e-7) // Add a costant to avoid log(0)
+          .log()
+      );
 
-    // Calculate the overall cross entropy cost
-    const cost: number = (
-      termOne
-        .add(termTwo)
-        .div(this.features.shape[0])
-        .mul(-1)
-        .arraySync() as Array<number>
-    )[0];
+      // Calculate the overall cross entropy cost
+      return (
+        termOne
+          .add(termTwo)
+          .div(this.features.shape[0])
+          .mul(-1)
+          .arraySync() as Array<number>
+      )[0];
+    });
 
     // Add the cost value to the beginning of the costHistory array
     this.costHistory.unshift(cost);
