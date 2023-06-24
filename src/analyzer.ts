@@ -235,43 +235,66 @@ const runMultinominalLogisticRegressionAnalysis = async (): Promise<void> => {
  * Tests the model using test data and outputs the accuracy.
  */
 const runImageRecognition = (): void => {
-  // Load MNIST training data (5000 images)
-  const mnistData: any = mnist.training(0, 5000);
-  // Load MNIST test data (100 images)
-  const testMnistData: any = mnist.testing(0, 100);
+  // Memory optimization, after the call of loadData no more reference to mnistData and testMnistData sussit
+  // so the garbage collector can free that memory
+  const loadData = (): {
+    features: Array<Array<number>>;
+    labels: Array<Array<number>>;
+    testFeatures: Array<Array<number>>;
+    testLabels: Array<Array<number>>;
+  } => {
+    // Load MNIST training data
+    const mnistData: any = mnist.training(0, 60_000);
+    // Load MNIST test data
+    const testMnistData: any = mnist.testing(0, 10_000);
 
-  // Extract features from training data
-  const features: Array<Array<number>> = mnistData.images.values.map(
-    (image: any) => flatMap(image)
-  );
-  // Extract labels from training data and convert them to one-hot encoded vectors
-  const labels: Array<Array<number>> = mnistData.labels.values.map(
-    (label: any) => {
-      const row: Array<number> = new Array(10).fill(0);
-      row[label] = 1;
-      return row;
-    }
-  );
+    // Extract features from training data
+    const features: Array<Array<number>> = mnistData.images.values.map(
+      (image: any) => flatMap(image)
+    );
+    // Extract labels from training data and convert them to one-hot encoded vectors
+    const labels: Array<Array<number>> = mnistData.labels.values.map(
+      (label: any) => {
+        const row: Array<number> = new Array(10).fill(0);
+        row[label] = 1;
+        return row;
+      }
+    );
 
-  // Extract features from test data
-  const testFeatures: Array<Array<number>> = testMnistData.images.values.map(
-    (image: any) => flatMap(image)
-  );
-  // Extract labels from test data and convert them to one-hot encoded vectors
-  const testLabels: Array<Array<number>> = testMnistData.labels.values.map(
-    (label: any) => {
-      const row: Array<number> = new Array(10).fill(0);
-      row[label] = 1;
-      return row;
-    }
-  );
+    // Extract features from test data
+    const testFeatures: Array<Array<number>> = testMnistData.images.values.map(
+      (image: any) => flatMap(image)
+    );
+    // Extract labels from test data and convert them to one-hot encoded vectors
+    const testLabels: Array<Array<number>> = testMnistData.labels.values.map(
+      (label: any) => {
+        const row: Array<number> = new Array(10).fill(0);
+        row[label] = 1;
+        return row;
+      }
+    );
+
+    return { features, labels, testFeatures, testLabels };
+  };
+
+  const {
+    features,
+    labels,
+    testFeatures,
+    testLabels,
+  }: {
+    features: Array<Array<number>>;
+    labels: Array<Array<number>>;
+    testFeatures: Array<Array<number>>;
+    testLabels: Array<Array<number>>;
+  } = loadData();
 
   // Create an instance of MultinominalLogisticRegression class and train the model
   const multinominalLogisticRegression: MultinominalLogisticRegression =
     new MultinominalLogisticRegression(tensor(features), tensor(labels), {
       learningRate: 1,
-      iterations: 20,
-      batchSize: 100,
+      iterations: 40,
+      batchSize: 500,
     });
 
   multinominalLogisticRegression.train();
